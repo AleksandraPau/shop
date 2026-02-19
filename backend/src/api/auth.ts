@@ -1,4 +1,5 @@
 import express from "express";
+import bcrypt from "bcrypt";
 import { hashPass } from "../utilits/hashPass";
 import prisma from "../db";
 
@@ -6,14 +7,36 @@ const router = express.Router();
 
 router.post("/login", async (req, res) => {
   try {
-    const { email, password } = req.body;
-    if (!email || !password) {
-      return res.status(400).json({ error: "Email or password required" });
-    }
-    console.log(email, password);
+    const { identifier, password } = req.body;
 
-    return res.status(200).json({ text: "success" });
+    if (!identifier || !password) {
+      return res.status(400).json({ error: "Email/username or password required" });
+    }
+
+    const user = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { email: identifier },
+          { username: identifier}
+        ]
+      }
+    });
+
+    if (!user) {
+      return res.status(401).json({ error: "Invalid login" });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      return res.status(401).json({ error: "Invalid password"});
+    }
+
+    console.log(`User logged in: ${user.username}`);
+    return res.status(200).json({ message: "success", username: user.username });
+
   } catch (e) {
+    console.log("Login error:", e);
     return res.status(500).json({ error: "Internal server error" });
   }
 });
@@ -25,16 +48,17 @@ router.post("/logout", async (req, res) => {
 router.post("/registration", async (req, res) => {
   try {
     const { login: username, email, password } = req.body;
+
     if (!username || !email || !password) {
       return res.status(400).json({ error: "Username, email and password required" });
     }
 
-    console.log(email, password);
-
-    // Проверка существования пользователя
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        OR: [{ email }, { username }]
+      },
     });
+
     if (existingUser) {
       return res.status(409).json({ error: "User with this email already exists" });
     }
