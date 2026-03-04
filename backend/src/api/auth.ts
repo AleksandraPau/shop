@@ -2,8 +2,11 @@ import express from "express";
 import bcrypt from "bcrypt";
 import { hashPass } from "../utilits/hashPass";
 import prisma from "../db";
+import jwt from "jsonwebtoken";
 
 const router = express.Router();
+
+const SECRET_KEY =  process.env.JWT_SECRET || "default_secret_for_dev"
 
 router.post("/login", async (req, res) => {
   try {
@@ -31,6 +34,18 @@ router.post("/login", async (req, res) => {
     if (!isMatch) {
       return res.status(401).json({ error: "Invalid password"});
     }
+    const token = jwt.sign(
+      { userId: user.id, role: user.role || "USER" },
+      SECRET_KEY,
+      { expiresIn: "1d"}
+    );
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 24 *60 *60 * 1000
+    });
 
     console.log(`User logged in: ${user.username}`);
     return res.status(200).json({ message: "success", username: user.username });

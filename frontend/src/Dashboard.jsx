@@ -47,7 +47,7 @@ const Dashboard = () => {
     <div style={{padding:'40px', fontFamily: 'sans-serif'}}>
       <div style={{display: 'flex', justifyContent:'space-between', alignItems: 'center' }}>
         <h1>Витрина товаров</h1>
-        <button onClick={handleLogout} style={logoutBtnStyle}>Dsqnb</button>
+        <button onClick={handleLogout} style={logoutBtnStyle}>login out</button>
       </div>
       <div style={gridStyle}>
         {products.map((product)=> (
