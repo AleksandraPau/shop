@@ -1,96 +1,49 @@
 import express from "express";
-import bcrypt from "bcrypt";
-import { hashPass } from "../utilits/hashPass";
-import prisma from "../db";
-import jwt from "jsonwebtoken";
+import { AuthService } from "../services/auth.services";
+import { protect } from "../middleware/authMiddleware";
 
 const router = express.Router();
 
-const SECRET_KEY =  process.env.JWT_SECRET || "default_secret_for_dev"
+const COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'lax' as const, 
+  maxAge: 24 *60 *60 * 1000
+};
+
+router.get("/me", protect, async (req: any, res) => {
+  try {
+    const user = await AuthService.findUserById(req.user.userId);
+    res.json(user);
+  } catch (e) {
+    res.status(401).json({ error: "Not authorized" });
+  }
+});
 
 router.post("/login", async (req, res) => {
   try {
     const { identifier, password } = req.body;
+    const { token, username} = await AuthService.login(identifier, password);
 
-    if (!identifier || !password) {
-      return res.status(400).json({ error: "Email/username or password required" });
-    }
-
-    const user = await prisma.user.findFirst({
-      where: {
-        OR: [
-          { email: identifier },
-          { username: identifier}
-        ]
-      }
-    });
-
-    if (!user) {
-      return res.status(401).json({ error: "Invalid login" });
-    }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-
-    if (!isMatch) {
-      return res.status(401).json({ error: "Invalid password"});
-    }
-    const token = jwt.sign(
-      { userId: user.id, role: user.role || "USER" },
-      SECRET_KEY,
-      { expiresIn: "1d"}
-    );
-
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 24 *60 *60 * 1000
-    });
-
-    console.log(`User logged in: ${user.username}`);
-    return res.status(200).json({ message: "success", username: user.username });
-
-  } catch (e) {
-    console.log("Login error:", e);
-    return res.status(500).json({ error: "Internal server error" });
+    res.cookie("token", token, COOKIE_OPTIONS);
+    res.status(200).json({ message: "success", username });
+  } catch (e: any) {
+    res.status(401).json({ error: e.message });
   }
 });
 
-router.post("/logout", async (req, res) => {
-  return res.status(200).json({ message: "Logged out" });
+router.post("/logout", (req, res) => {
+  res.clearCookie("token", { ...COOKIE_OPTIONS, path: '/' });
+  res.status(200).json({ message: "Logged out" });
 });
 
 router.post("/registration", async (req, res) => {
   try {
-    const { login: username, email, password } = req.body;
-
-    if (!username || !email || !password) {
-      return res.status(400).json({ error: "Username, email and password required" });
-    }
-
-    const existingUser = await prisma.user.findFirst({
-      where: {
-        OR: [{ email }, { username }]
-      },
-    });
-
-    if (existingUser) {
-      return res.status(409).json({ error: "User with this email already exists" });
-    }
-
-    const hashedPass = await hashPass(password);
-    const newUser = await prisma.user.create({
-      data: {
-        username,
-        email,
-        password: hashedPass,
-      },
-    });
-
-    return res.status(201).json({ text: newUser.username });
-  } catch (e) {
-    console.error("Registration error:", e);
-    return res.status(500).json({ error: "Internal server error" });
+    const { login, email, password } = req.body;
+    const user = await AuthService.register(login, email, password);
+    res.status(201).json({ text: user.username });
+  } catch (e: any) {
+    res.status(400).json({ error: e.message });
   }
 });
 

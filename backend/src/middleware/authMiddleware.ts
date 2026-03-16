@@ -4,7 +4,7 @@ import { error } from 'node:console';
 
 const SECRET_KEY = process.env.JWT_SECRET || "default_secret";
 
-export const protect = (req: Request, res: Response, next: NextFunction) => {
+export const protect = (req: any, res: Response, next: NextFunction) => {
     const token = req.cookies.token;
 
     if (!token) {
@@ -13,9 +13,9 @@ export const protect = (req: Request, res: Response, next: NextFunction) => {
 
     try {
         const decoded = jwt.verify(token, SECRET_KEY);
-        (res as any).user = decoded;
+        req.user = decoded;
         next();
-    } catch (error) {
+    } catch (err) {
         res.status(401).json({ error: "token is wrong!!!"});
     }
 };

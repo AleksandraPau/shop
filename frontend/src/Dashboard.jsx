@@ -1,9 +1,10 @@
-import React from 'react';
+import { useEffect, useState } from "react";
 import { useNavigate } from 'react-router-dom'
 import { gridStyle, cardStyle, buyBtnStyle, logoutBtnStyle } from './api/DashboardStyles.js';
+import "./App.css";
 
 
-const Dashboard = () => {
+function Dashboard() {
   const navigate = useNavigate();
 
   const products = [
@@ -38,13 +39,56 @@ const Dashboard = () => {
     { id: 29, title: 'Tablet Stylus', desc: 'Precision pen for drawing and note-taking on touchscreens.', price: 1700, image: 'https://picsum.photos/seed/29/300/300' },
     { id: 30, title: 'Wireless Keyboard', desc: 'Slim low-profile keyboard with quiet keys and long battery.', price: 2200, image: 'https://picsum.photos/seed/30/300/300' }
   ];
-  
-  const handleLogout = () => {
-    navigate('/');
+
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const res = await fetch("http://localhost:3000/api/auth/me", {
+          credentials: "include"
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setUser(data);
+        } else {
+          navigate("/");
+        }
+      } catch (err) {
+        navigate("/");
+      } finally {
+        setLoading(false);
+      }
+    };
+    checkAuth();
+  }, [navigate]);
+
+  if (loading) return <div>Loading...</div>;
+
+
+  const handleLogout = async () => {
+    try {
+      const response = await fetch("http://localhost:3000/api/auth/logout", {
+      method: "POST",
+      credentials: "include"
+      });
+
+      if (response.ok) {
+        navigate("/login");
+      } else {
+        console.error("Server can't make log out");
+      }
+    } catch (err) {
+      console.error("Error network on exit", err);
+    }
   };
 
   return (
     <div style={{padding:'40px', fontFamily: 'sans-serif'}}>
+      <div>
+        <h1>WELCOME, {user?.username}</h1>
+      </div>
       <div style={{display: 'flex', justifyContent:'space-between', alignItems: 'center' }}>
         <h1>Витрина товаров</h1>
         <button onClick={handleLogout} style={logoutBtnStyle}>login out</button>
@@ -62,7 +106,5 @@ const Dashboard = () => {
     </div>
   );
 };
-
-
 
 export default Dashboard;

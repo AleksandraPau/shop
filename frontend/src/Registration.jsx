@@ -41,7 +41,7 @@ const Registration = () => {
   return (
     <div style={{ border: '1px solid gray', padding: '20px', margin: '10px' }}>
       <form onSubmit={handleRegister}>
-        <h2>Регистрация (Новый компонент)</h2>
+        <h2>Регистрация</h2>
         
         <input 
           type="text" 

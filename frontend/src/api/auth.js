@@ -1,25 +1,29 @@
-// const roles = {
-//   0: "LOGIN",
-//   1: "USER",
-//   2: "MANAGER",
-// };
 
-export async function login(login, password) {
-    const res = await fetch("http://localhost:3000/api/auth/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({email: login, password}),
-      credentials: 'include'
-    })
-    const user = users.find(u => u.login === login && u.password === password);
-    if (user){
-        // eslint-disable-next-line no-unused-vars
-        const {password, ...dtoUser} = user
-        dtoUser.role = roles[user.roleID];
-        return Promise.resolve(dtoUser)
+export async function login(identifier, password) {
+  const response = await fetch("http://localhost:3000/api/auth/login", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({identifier, password}),
+    credentials: 'include'
+  });
 
-    }
-    Promise.reject("user not found or wrong password")
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.error || "errorLogIn");
+  }
+
+  return data;
+}
+
+//сохранение при перезагрузке
+export async function checkAuth() {
+  const response = await fetch("http://localhost:3000/api/auth/me", {
+    method: "GET",
+    credentials: 'include'
+  });
+  if (!response.ok) throw new Error("NotAuthorized");
+  return await response.json();
 }
