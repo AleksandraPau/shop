@@ -4,7 +4,7 @@ import prisma from "../db";
 import { hashPass } from "../utilits/hashPass";
 
 const SECRET_KEY =  process.env.JWT_SECRET || "default_secret_for_dev"
-
+//че т переделать нужно___ где проверки ? куда кто
 export const AuthService = {
     async findUserById(id: number) {
         return prisma.user.findFirst({

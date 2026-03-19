@@ -1,14 +1,15 @@
-import express from "express";
+import { Router, Request, Response } from "express";
 import prisma from "../db";
 
-const router = express.Router();
+const router = Router();
 
-router.get("/", async (res, req) => {
+router.get("/", async (req: Request, res: Response) => {
     try {
         const products = await prisma.product.findMany();
         res.json(products);
     } catch (error) {
-        res.statusCode(500).json({ error: "Error of getting products"});
+        console.log("error receiving goods", error);
+        res.status(500).json({error: "Server error loading items"});
     }
 });
 
