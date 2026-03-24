@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from 'react-router-dom'
-import { gridStyle, cardStyle, buyBtnStyle, logoutBtnStyle } from './api/DashboardStyles.js';
+import { gridStyle, cardStyle, buyBtnStyle, logoutBtnStyle } from './api/DashboardStyles.ts';
 import "./App.css";
 
 
