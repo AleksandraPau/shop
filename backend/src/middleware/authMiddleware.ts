@@ -1,6 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { error } from 'node:console';
+
+interface AuthRequest extends Request {
+    user?: any;
+}
 
 const SECRET_KEY = process.env.JWT_SECRET || "default_secret";
 
