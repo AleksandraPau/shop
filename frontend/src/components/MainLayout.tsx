@@ -8,7 +8,7 @@ export const MainLayout = () => {
 
     useEffect(() => {
         fetchCart();
-    }, [fetchCart]);
+    }, []);
 
     return (
         <>

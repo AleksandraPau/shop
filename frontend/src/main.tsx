@@ -1,6 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import './index.css'
 
 import { MainLayout } from './components/MainLayout'
@@ -10,8 +10,14 @@ import Dashboard from './pages/Dashboard'
 // Импортируй страницу корзины, когда создашь: 
 // import CartPage from './pages/CartPage'
 
+const container = document.getElementById('root');
 
-createRoot(document.getElementById('root')).render(
+if (!container) {
+  throw new Error("Не удалось найти корневой элемент 'root'. Проверь index.html!");
+}
+
+const root = createRoot(container);
+root.render(
   <StrictMode>
     <BrowserRouter>
       <Routes>

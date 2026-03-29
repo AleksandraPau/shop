@@ -1,36 +1,49 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from 'react-router-dom'
-import { gridStyle, cardStyle, buyBtnStyle, logoutBtnStyle } from '../api/DashboardStyles.js';
+import { useNavigate } from 'react-router-dom';
+// Импортируем стили и наш стор корзины
+import { gridStyle, cardStyle, buyBtnStyle } from '../api/DashboardStyles.js';
+import { useCartStore } from '../store/useCartStore';
 import "../App.css";
 
+// Описываем тип товара, чтобы TS не ругался на .id или .name
+interface Product {
+  id: number;
+  name: string;
+  price: number;
+  description?: string;
+  image?: string;
+}
 
 function Dashboard() {
   const navigate = useNavigate();
-
-  const [user, setUser] = useState(null);
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Достаем функцию добавления в корзину из Zustand
+  const addItem = useCartStore((state) => state.addItem);
 
   useEffect(() => {
     const initDashboard = async () => {
       try {
+        // 1. Проверяем авторизацию через наш эндпоинт
         const authRes = await fetch("http://localhost:3000/api/auth/me", {
           credentials: "include"
         });
 
         if (authRes.ok) {
-          const userData = await authRes.json();
-          setUser(userData);
-
-          const prodRes = await fetch("http://localhost:3000/api/products");
+          // 2. Если авторизован — грузим товары (не забудь credentials!)
+          const prodRes = await fetch("http://localhost:3000/api/products", {
+            credentials: "include" 
+          });
           const prodData = await prodRes.json();
           setProducts(prodData);
         } else {
-          navigate("/");
+          // Если не ок — мягко уходим на логин (без стробоскопа)
+          navigate("/login");
         }
       } catch (err) {
         console.error("Initialization error:", err);
-        navigate("/");
+        navigate("/login");
       } finally {
         setLoading(false);
       }
@@ -38,44 +51,34 @@ function Dashboard() {
     initDashboard();
   }, [navigate]);
 
-  const handleLogout = async () => {
-    try {
-      const response = await fetch("http://localhost:3000/api/auth/logout", {
-      method: "POST",
-      credentials: "include"
-      });
-
-      if (response.ok) {
-        navigate("/");
-      }
-    } catch (err) {
-      console.error("Error network on exit", err);
-    }
-  };
+  if (loading) return <div style={{ padding: '40px', color: 'white' }}>Загрузка товаров...</div>;
 
   return (
-    <div style={{padding:'40px', fontFamily: 'sans-serif'}}>
-      <div>
-        <h1>WELCOME, {user?.username}</h1>
-        <button onClick={handleLogout} style={logoutBtnStyle}>login out</button>
-      </div>
-      <div style={{display: 'flex', justifyContent:'space-between', alignItems: 'center' }}>
-        
-        <h1>Витрина товаров</h1>
-
-      </div>
+    <div style={{ padding: '20px', fontFamily: 'sans-serif' }}>
+      <h1 style={{ color: 'white', marginBottom: '30px' }}>Витрина товаров</h1>
 
       <div style={gridStyle}>
-        {products.map((product)=> (
+        {products.map((product) => (
           <div key={product.id} style={cardStyle}>
-            <img 
-              src={product.image} 
-              alt={product.desc} 
-              style={{width: '100%', borderRadius: '8px' }} 
-            />
-            <h3 style={{margin: '10px 0'}}>{product.name}</h3>
-            <p style={{color: '#888' }}>{product.price}</p>
-            <button style={buyBtnStyle}>В корзину</button>
+            <div style={{ height: '200px', overflow: 'hidden', borderRadius: '8px', background: '#333' }}>
+              <img 
+                src={product.image || 'https://via.placeholder.com'} 
+                alt={product.name} 
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+              />
+            </div>
+            <h3 style={{ margin: '15px 0 5px', color: 'white' }}>{product.name}</h3>
+            <p style={{ color: '#646cff', fontWeight: 'bold', fontSize: '1.2rem' }}>
+              {product.price} ₽
+            </p>
+            
+            {/* Кнопка теперь реально работает с корзиной */}
+            <button 
+              style={buyBtnStyle}
+              onClick={() => addItem(product.id)}
+            >
+              В корзину
+            </button>
           </div>
         ))}
       </div>

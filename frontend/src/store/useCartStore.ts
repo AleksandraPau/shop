@@ -49,4 +49,7 @@ export const useCartStore = create<CartState>((set) => ({
             alert("Нужно войти в аккаунт, чтобы добавить товар!");
         }
     },
+
+    clearCart: () => set({ items: [], totalItems: 0}),
+    
 }));

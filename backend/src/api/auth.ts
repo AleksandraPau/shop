@@ -33,10 +33,15 @@ router.post("/login", async (req, res) => {
 });
 
 router.post("/logout", (req, res) => {
-  res.clearCookie("token", { ...COOKIE_OPTIONS, path: '/' });
-  res.status(200).json({ message: "Logged out" });
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+  });
+  return res.status(200).json({ message: "Logged out" });
 });
-
+ 
 router.post("/registration", async (req, res) => {
   try {
     const { login, email, password } = req.body;

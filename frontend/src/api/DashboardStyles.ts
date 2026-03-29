@@ -12,7 +12,7 @@ export const cardStyle = {
   textAlign: 'center',
   boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
   transition: 'transform 0.2s'
-};
+} as const;
 
 export const buyBtnStyle = {
   backgroundColor: '#007bff',
