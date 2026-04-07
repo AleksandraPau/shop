@@ -58,4 +58,23 @@ router.get("/", protect, async (req: any, res: any) => {
     }
 });
 
+// оформить заказ
+router.post("/checkout", protect, async (req: any, res: any) => {
+    const userId = Number(req.user.userId);
+
+    try {
+        const cart = await prisma.cart.findUnique({where: {userId}});
+
+        if (cart) {
+            await prisma.cartItem.deleteMany({
+                where: { cartId: cart.id }
+            });
+        }
+
+        res.status(200).json({ message: "Order successfully issued", orderId: Math.floor(Math.random() * 10000)});
+    } catch (error) {
+        res.status(500).json({ error: "Error of order issue"})
+    }
+})
+
 export default router;
