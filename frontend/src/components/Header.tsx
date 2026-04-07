@@ -32,6 +32,8 @@ export const Header = () => {
 
         <nav className="nav">
           <Link to="/dashboard" className="nav-link">Каталог</Link>
+          <Link to="/support" className="nav-link">Поддержка</Link>
+
           
           <Link to="/cart" className="cart-link">
             <span className="cart-icon">🛒</span>
