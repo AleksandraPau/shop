@@ -26,6 +26,8 @@ export const CartPage = () => {
         }
     };
 
+    const clearCartAll = useCartStore((state) => state.clearCartAll);
+
     if (isOrdered) {
         return (
             <div className="cart-empty">
@@ -48,7 +50,7 @@ export const CartPage = () => {
         return (
             <div className="cart-empty">
                 <h2>Cart is empty</h2>
-                <Link to="dashboard">Return to dashboard</Link>
+                <Link to={"/dashboard"}>Return to dashboard</Link>
             </div>
         );
     }
@@ -80,6 +82,9 @@ export const CartPage = () => {
         <span>Всего товаров: {totalItems}</span>
         <span className="total-price">Итого: {totalPrice} ₽</span>
         <button className="checkout-btn" onClick={handleCheckout}>Оформить заказ</button>
+      </div>
+      <div>
+        <button className="clear-btn" onClick={clearCartAll}>Очистить всё</button>
       </div>
     </div>
   );

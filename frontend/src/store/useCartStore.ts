@@ -17,6 +17,8 @@ interface CartState {
     totalItems: number;
     fetchCart: () => Promise<void>;
     addItem: (productId: number, quanyity?: number) => Promise<void>;
+    clearCart: () => void;
+    clearCartAll: () => Promise<void>;
 }
 
 export const useCartStore = create<CartState>((set) => ({
@@ -51,5 +53,21 @@ export const useCartStore = create<CartState>((set) => ({
     },
 
     clearCart: () => set({ items: [], totalItems: 0}),
+
+    clearCartAll: async () => {
+        try {
+            const response = await fetch("http://localhost:3000/api/cart/clear", {
+                method: "DELETE",
+                credentials: "include"
+            });
+
+            if (response.ok) {
+                set({items: [], totalItems: 0});
+            }
+        } catch (error) {
+            console.error("Ошибка при очистке:", error);
+            
+        }
+    },
     
 }));

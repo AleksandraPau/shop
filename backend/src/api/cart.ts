@@ -77,4 +77,22 @@ router.post("/checkout", protect, async (req: any, res: any) => {
     }
 })
 
+router.delete("/clear", protect, async (req: any, res: any) => {
+    const userId = Number(req.user.userId);
+
+    try {
+        const cart = await prisma.cart.findUnique({ where: { userId} });
+
+        if (cart) {
+            await prisma.cartItem.deleteMany({
+                where: { cartId: cart.id }
+            });
+        }
+
+        res.status(200).json({ message: "Cart is clear"});
+    } catch (error) {
+        res.status(500).json({ error: "Не удалось очистить корзину"});
+    }
+});
+
 export default router;

@@ -87,3 +87,19 @@
   color: #646cff;
   text-decoration: none;
 }
+
+.clear-btn {
+  background: transparent;
+  border: 1px solid #ff4646;
+  color: #ff4646;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.2s;
+}
+
+.clear-btn:hover {
+  background: #ff4646;
+  color: white;
+}
