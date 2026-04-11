@@ -16,15 +16,15 @@ datasource db {
 
 
 model User {
-  id       Int        @id @default(autoincrement())
-  username String     @unique
-  email    String     @unique
-  password String
-  role     String     @default("USER")
-  createAt DateTime   @default(now())
-  posts    Post[]
-
-  cart     Cart?
+  id            Int        @id @default(autoincrement())
+  username      String     @unique
+  email         String     @unique
+  password      String
+  role          String     @default("USER")
+  createAt      DateTime   @default(now())
+  posts         Post[]
+  chatMessages  ChatMessage[]
+  cart          Cart?
 }
 
 model Product {
@@ -66,4 +66,13 @@ model Post {
   authorId Int
   // Описание связи: поле authorId ссылается на id в модели User
   author    User @relation(fields: [authorId], references: [id])
+}
+
+model ChatMessage {
+  id        Int       @id @default(autoincrement())
+  text      String
+  isMe      Boolean
+  userId    Int
+  user      User      @relation(fields: [userId], references: [id])
+  createdAt DateTime  @default(now())
 }

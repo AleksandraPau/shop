@@ -2,11 +2,14 @@ import { Outlet } from "react-router-dom";
 import { Header } from "./Header";
 import { useEffect } from "react";
 import { useCartStore } from "../store/useCartStore";
+import { useAuthStore } from "@/store/useAuthStore";
 
 export const MainLayout = () => {
     const fetchCart = useCartStore((state) => state.fetchCart);
+    const checkAuth = useAuthStore((state) => state.checkAuth);
 
     useEffect(() => {
+        checkAuth();
         fetchCart();
     }, []);
 

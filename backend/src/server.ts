@@ -8,6 +8,8 @@ import authRouter from "./api/auth";
 import cartRoutes from "./api/cart";
 import productsRouter from "./api/products";
 import { id } from "effect/Fiber";
+import prisma from "./db";
+import { disconnect } from "cluster";
 
 const PORT = 3000;
 const app = express();
@@ -36,21 +38,50 @@ const io = new Server(server, {
 });
 
 io.on("connection", (socket) => {
-    console.log("Клиент подключился к чату", socket.id);
+    const userId = socket.handshake.auth.userId;
+    console.log(`User ${userId} connected to chat`);
 
-    socket.on("send_message", (data) => {
-        console.log("Сообщение от юзера:", data.text);
+    socket.on("get_history", async () => {
+        try {
+            const history = await prisma.chatMessage.findMany({
+                where: { userId },
+                orderBy: { createdAt: 'asc' } 
+            });
+            socket.emit("chat_history", history);
+        } catch (e) {
+            console.error("History loading error:", e);
+        }
+    });
 
-        io.emit("receive_message", {
-            id: Date.now(),
-            text: `Поддержка получила: "${data.text}". Ожидайте ответа.`,
-            isMe: false,
-            // userId: data.userId
-        });
+
+    socket.on("client_message", async (data) => {
+        if (isNaN(userId)) return;
+
+        try {
+            const savedMsg = await prisma.chatMessage.create({
+                data: {
+                    text: data.text,
+                    isMe: true,
+                    userId: Number(userId)
+                }
+            });
+            socket.emit("server_message", savedMsg);
+
+            const supportMsg = await prisma.chatMessage.create({
+                data: {
+                    text: "Thank you! We'll be back soon with answer!",
+                    isMe: false,
+                    userId: Number(userId)
+                }
+            });
+            socket.emit("server_message", supportMsg);
+        } catch (e) {
+            console.error("Error to saving chat:", e);
+        }
     });
 
     socket.on("disconnect", () => {
-        console.log("Клиент отключился");
+        console.log(`User ${userId} diconnected`);
     });
 });
 
