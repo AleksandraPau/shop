@@ -4,9 +4,10 @@ import { useNavigate } from "react-router-dom";
 
 function Login() {
   const navigate = useNavigate();
-
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
+
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
   const submit = async (e) => {
   e.preventDefault();
@@ -23,7 +24,6 @@ function Login() {
 console.log(response);
 
     if (response.ok) {
-      alert("Вход выполнен!");
       navigate('/dashboard');
     } else {
       alert("Error: " + data.error);

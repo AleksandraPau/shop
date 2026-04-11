@@ -55,7 +55,7 @@ export const CartPage = () => {
         );
     }
 
-     return (
+    return (
     <div className="cart-page">
       <h1>Ваша корзина</h1>
       <div className="cart-list">

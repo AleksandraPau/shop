@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { io } from 'socket.io-client';
 import './Support.css'
-// Описание типов для пропсов (если нужны)
 
+const socket = io("http://localhost:3000");
 
 interface Message {
   id: number;
@@ -9,17 +10,30 @@ interface Message {
   isMe: boolean;
 }
 
-const App: React.FC = () => {
-  const [messages, setMessages] = useState<Message[]>([
-    { id: 1, text: "Привет! Как дела?", isMe: false },
-    { id: 2, text: "Всё супер, пишу код на TSX!", isMe: true },
-  ]);
+const Support: React.FC = () => {
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
+
+  useEffect(() => {
+    socket.on("server_message", (newMsg: Message) => {
+      console.log("Message from server:", newMsg);
+      setMessages((prev) => [...prev, newMsg]);
+    });
+
+    return () => {
+      socket.off("server_message");
+    };
+  }, []);
 
   const sendMessage = () => {
     if (!input.trim()) return;
-    const newMessage: Message = { id: Date.now(), text: input, isMe: true };
-    setMessages([...messages, newMessage]);
+
+    const myMsg: Message = { id: Date.now(), text: input, isMe: true };
+    
+    setMessages((prev) => [...prev, myMsg]);
+
+    socket.emit("client_message", myMsg);
+
     setInput('');
   };
 
@@ -45,4 +59,4 @@ const App: React.FC = () => {
   );
 };
 
-export default App;
+export default Support;
