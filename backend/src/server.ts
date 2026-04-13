@@ -38,8 +38,12 @@ const io = new Server(server, {
 });
 
 io.on("connection", (socket) => {
-    const userId = socket.handshake.auth.userId;
-    console.log(`User ${userId} connected to chat`);
+    const userId = Number(socket.handshake.auth.userId);
+    if(!isNaN(userId)) {
+        socket.join(`user_${userId}`);
+        console.log(`User ${userId} joined room user_${userId}`);
+
+    }
 
     socket.on("get_history", async () => {
         try {
@@ -59,23 +63,21 @@ io.on("connection", (socket) => {
 
         try {
             const savedMsg = await prisma.chatMessage.create({
-                data: {
-                    text: data.text,
-                    isMe: true,
-                    userId: Number(userId)
-                }
+                data: { text: data.text, isMe: true, userId }
             });
-            socket.emit("server_message", savedMsg);
+            socket.to(`user_${userId}`).emit( "server_message", savedMsg);
 
-            const supportMsg = await prisma.chatMessage.create({
-                data: {
-                    text: "Thank you! We'll be back soon with answer!",
-                    isMe: false,
-                    userId: Number(userId)
-                }
-            });
-            socket.emit("server_message", supportMsg);
-        } catch (e) {
+            setTimeout(async () => {
+                const supportMsg = await prisma.chatMessage.create({
+                    data: {
+                        text: "Thank you! We'll be back soon with answer!",
+                        isMe: false,
+                        userId
+                    }
+                });
+                io.to(`user_${userId}`).emit("server_message", supportMsg);
+        }, 1000);
+        }  catch (e) {
             console.error("Error to saving chat:", e);
         }
     });
