@@ -12,6 +12,8 @@ interface AuthState {
     setUser: (user: User | null) => void;
     checkAuth: () => Promise<void>;
     logout: () => void;
+    hasNewMessage: boolean;
+    setHasNewMessage: (val: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -35,6 +37,8 @@ export const useAuthStore = create<AuthState>((set) => ({
             set({user: null, isAuth: false });
         }
     },
-    
+    hasNewMessage: false,
+    setHasNewMessage: (val) => set({hasNewMessage: val}),
+
     logout: () => set({ user:null, isAuth: false }),
 }));
