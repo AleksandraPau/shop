@@ -1,13 +1,22 @@
+import { Prisma } from '@prisma/client';
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import { prisma } from '../db';
+import { error } from 'node:console';
 
-interface AuthRequest extends Request {
-    user?: any;
+interface JwtPayload {
+    userId: number;
+}
+
+export interface AuthRequest extends Request {
+    user?: {
+        userId: number;
+    };
 }
 
 const SECRET_KEY = process.env.JWT_SECRET || "default_secret";
 
-export const protect = (req: any, res: Response, next: NextFunction) => {
+export const protect = async (req: AuthRequest, res: Response, next: NextFunction) => {
     const token = req.cookies.token;
 
     if (!token) {
@@ -15,8 +24,19 @@ export const protect = (req: any, res: Response, next: NextFunction) => {
     }
 
     try {
-        const decoded = jwt.verify(token, SECRET_KEY);
-        req.user = decoded;
+        const decoded = jwt.verify(token, SECRET_KEY) as JwtPayload;
+
+        const userExist = await prisma.user.findUnique({
+            where: { id: decoded.userId },
+            select: { id: true}
+        });
+
+        if (!userExist) {
+            return res.status(401).json({ error: "Пользователь больше не существует"});
+        }
+
+        req.user = {userId: decoded.userId};
+
         next();
     } catch (err) {
         res.status(401).json({ error: "token is wrong!!!"});

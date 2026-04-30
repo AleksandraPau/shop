@@ -8,7 +8,7 @@ import authRouter from "./api/auth";
 import cartRoutes from "./api/cart";
 import productsRouter from "./api/products";
 import { id } from "effect/Fiber";
-import prisma from "./db";
+import {prisma} from "./db";
 import { disconnect } from "cluster";
 
 const PORT = 3000;

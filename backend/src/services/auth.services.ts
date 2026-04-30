@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import prisma from "../db";
+import {prisma} from "../db";
 import { hashPass } from "../utilits/hashPass";
 
 const SECRET_KEY =  process.env.JWT_SECRET || "default_secret_for_dev"
