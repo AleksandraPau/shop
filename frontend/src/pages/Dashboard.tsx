@@ -1,82 +1,54 @@
 import { useEffect, useState } from "react";
-import { useNavigate, Link } from 'react-router-dom'; // Добавили Link
-import { gridStyle, cardStyle, buyBtnStyle } from '../api/DashboardStyles.js';
+import { useNavigate, Link } from 'react-router-dom';
 import { useCartStore } from '../store/useCartStore';
-import "../App.css";
-
-interface Product {
-  id: number;
-  name: string;
-  price: number;
-  description?: string;
-  image?: string;
-}
+import './Dashboard.css'; 
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const addItem = useCartStore((state) => state.addItem);
 
   useEffect(() => {
-    const initDashboard = async () => {
+    const init = async () => {
       try {
-        const authRes = await fetch("http://localhost:3000/api/auth/me", {
-          credentials: "include"
-        });
+        const auth = await fetch("http://localhost:3000/api/auth/me", { credentials: "include" });
+        if (!auth.ok) return navigate("/login");
 
-        if (!authRes.ok) return navigate("/login");
-
-        const prodRes = await fetch("http://localhost:3000/api/products", {
-          credentials: "include" 
-        });
-        
-        if (prodRes.ok) {
-          const prodData = await prodRes.json();
-          setProducts(Array.isArray(prodData) ? prodData : []);
-        }
+        const res = await fetch("http://localhost:3000/api/products", { credentials: "include" });
+        const data = await res.json();
+        setProducts(Array.isArray(data) ? data : []);
       } catch (err) {
-        console.error("Dashboard error:", err);
+        console.error(err);
       } finally {
         setLoading(false);
       }
     };
-    initDashboard();
+    init();
   }, [navigate]);
 
-  if (loading) return <div style={{ padding: '40px', color: 'white' }}>Загрузка...</div>;
+  if (loading) return <div className="loading">Загрузка...</div>;
 
   return (
-    <div style={{ padding: '20px' }}>
-      <h1 style={{ color: 'white', marginBottom: '30px' }}>Витрина товаров</h1>
-      <div style={gridStyle}>
-        {products.length > 0 ? (
-          products.map((product) => (
-            <div key={product.id} style={cardStyle}>
-              {/* Оборачиваем картинку и имя в Link для перехода на страницу товара */}
-              <Link to={`/product/${product.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                <div style={{ height: '200px', overflow: 'hidden', borderRadius: '8px', background: '#333', cursor: 'pointer' }}>
-                  <img 
-                    src={product.image || 'https://placeholder.com'} 
-                    alt={product.name} 
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                  />
-                </div>
-                <h3 style={{ margin: '15px 0 5px', color: 'white', cursor: 'pointer' }}>
-                  {product.name}
-                </h3>
-              </Link>
-              
-              <p style={{ color: '#646cff', fontWeight: 'bold' }}>{product.price} ₽</p>
-              
-              <button style={buyBtnStyle} onClick={() => addItem(product.id)}>
-                В корзину
-              </button>
+    <div className="dashboard-container">
+      <h1 className="page-title">Каталог</h1>
+      
+      <div className="products-grid">
+        {products.map((product: any) => (
+          <div key={product.id} className="product-card">
+            <Link to={`/product/${product.id}`} className="product-link">
+              <div className="product-image-wrapper">
+                <img src={product.image || 'https://placeholder.com'} alt={product.name} />
+              </div>
+              <h3 className="product-title">{product.name}</h3>
+            </Link>
+            
+            <div className="product-footer">
+              <span className="product-price">{product.price} ₽</span>
+              <button className="add-button" onClick={() => addItem(product.id)}>+</button>
             </div>
-          ))
-        ) : (
-          <p style={{ color: 'white' }}>Товаров пока нет.</p>
-        )}
+          </div>
+        ))}
       </div>
     </div>
   );

@@ -103,3 +103,27 @@
   background: #ff4646;
   color: white;
 }
+
+.add-button, .buyBtn {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  outline: none;
+}
+
+.add-button:hover, .buyBtn:hover {
+  background-color: #3b82f6; /* Чуть ярче основной синий */
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(37, 99, 235, 0.4);
+}
+
+.add-button:active, .buyBtn:active {
+  transform: scale(0.92); /* Кнопка физически сжимается */
+  background-color: #1d4ed8; /* Становится темнее в момент нажатия */
+  box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.3); /* Внутренняя тень создает объем */
+}
+
+.add-button:focus, .buyBtn:focus {
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.5);
+}

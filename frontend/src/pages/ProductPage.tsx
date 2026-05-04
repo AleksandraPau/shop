@@ -1,52 +1,50 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCartStore } from '../store/useCartStore';
+import './ProductPage.css'; // Подключаем CSS
 
 export const ProductPage = () => {
-  const { id } = useParams(); 
+  const { id } = useParams();
   const navigate = useNavigate();
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const addItem = useCartStore((state) => state.addItem);
 
   useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        const res = await fetch(`http://localhost:3000/api/products/${id}`, {
-          credentials: "include"
-        });
-        if (!res.ok) throw new Error("Product not found");
-        const data = await res.json();
+    fetch(`http://localhost:3000/api/products/${id}`, { credentials: "include" })
+      .then(res => res.json())
+      .then(data => {
         setProduct(data);
-      } catch (err) {
-        console.error(err);
-        navigate('/dashboard'); 
-      } finally {
         setLoading(false);
-      }
-    };
-    fetchProduct();
+      })
+      .catch(() => navigate('/dashboard'));
   }, [id, navigate]);
 
-  if (loading) return <div style={{ padding: '40px', color: 'white' }}>Загрузка...</div>;
-  if (!product) return null;
+  if (loading) return <div className="product-page-container" style={{textAlign: 'center'}}>Загрузка...</div>;
 
   return (
-    <div style={styles.container}>
-      <button onClick={() => navigate(-1)} style={styles.backBtn}>← Назад</button>
+    <div className="product-page-container">
+      <button onClick={() => navigate(-1)} className="back-button">
+        ← Назад в каталог
+      </button>
       
-      <div style={styles.content}>
-        <div style={styles.imageBlock}>
-          <img src={product.image || 'https://placeholder.com'} alt={product.name} style={styles.image} />
+      <div className="product-content">
+        <div className="product-image-block">
+          <img 
+            src={product.image || 'https://placeholder.com'} 
+            alt={product.name} 
+            className="product-main-image" 
+          />
         </div>
         
-        <div style={styles.infoBlock}>
-          <h1 style={styles.title}>{product.name}</h1>
-          <p style={styles.price}>{product.price} ₽</p>
-          <p style={styles.description}>{product.description || 'Описание отсутствует'}</p>
+        <div className="product-info-block">
+          <h1 className="product-title">{product.name}</h1>
+          <p className="product-price-tag">{product.price} ₽</p>
+          <div className="divider" />
+          <p className="product-description">{product.description || 'Описание товара отсутствует.'}</p>
           
           <button 
-            style={styles.buyBtn}
+            className="product-buy-btn"
             onClick={() => addItem(product.id)}
           >
             Добавить в корзину
@@ -55,17 +53,4 @@ export const ProductPage = () => {
       </div>
     </div>
   );
-};
-
-const styles = {
-  container: { padding: '40px', maxWidth: '1200px', margin: '0 auto', color: 'white' },
-  backBtn: { background: 'none', border: 'none', color: '#646cff', cursor: 'pointer', marginBottom: '20px' },
-  content: { display: 'flex', gap: '50px', flexWrap: 'wrap' as const },
-  imageBlock: { flex: '1', minWidth: '300px' },
-  image: { width: '100%', borderRadius: '12px', background: '#333' },
-  infoBlock: { flex: '1', minWidth: '300px', display: 'flex', flexDirection: 'column' as const, gap: '20px' },
-  title: { fontSize: '2.5rem', margin: '0' },
-  price: { fontSize: '1.8rem', color: '#00ff88', fontWeight: 'bold' },
-  description: { lineHeight: '1.6', color: '#ccc' },
-  buyBtn: { padding: '15px 30px', background: '#646cff', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '1.1rem' }
 };

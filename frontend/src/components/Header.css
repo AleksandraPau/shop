@@ -1,7 +1,8 @@
 .header {
-  background-color: #121212; /* Глубокий черный */
-  border-bottom: 1px solid #2e2e2e;
-  padding: 0.8rem 0;
+  background-color: rgba(18, 18, 18, 0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid #333;
+  padding: 10px 0;
   position: sticky;
   top: 0;
   z-index: 1000;
@@ -17,17 +18,14 @@
 }
 
 .logo {
-  font-size: 1.4rem;
+  font-size: 1.5rem;
   font-weight: 800;
-  color: #ffffff;
-  text-decoration: none;
-  letter-spacing: 1px;
+  letter-spacing: -1px;
 }
 
 .logo span {
-  color: #646cff; /* Акцентный цвет (Vite/TS) */
+  color: #646cff;
 }
-
 .nav {
   display: flex;
   align-items: center;

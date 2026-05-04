@@ -1,66 +1,85 @@
+/* Контейнер всей страницы чата */
 .chat-container {
   display: flex;
   flex-direction: column;
-  height: 50vh;
-  max-width: 500px;
-  margin: 20px auto;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  background: #f9f9f9;
+  max-width: 600px;
+  height: 500px; /* Фиксированная высота, чтобы не разъезжался */
+  margin: 50px auto;
+  background: #1a1a1a; /* Темный фон */
+  border: 1px solid #333;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  overflow: hidden;
 }
 
+/* Список сообщений */
 .messages-list {
   flex: 1;
-  overflow-y: auto;
   padding: 20px;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
+/* Базовый стиль сообщения */
 .message {
-  max-width: 70%;
-  padding: 10px 15px;
-  border-radius: 18px;
-  font-family: sans-serif;
-  font-size: 14px;
+  max-width: 80%;
+  padding: 10px 16px;
+  border-radius: 15px;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: white;
 }
 
+/* Мои сообщения (справа) */
 .my-message {
   align-self: flex-end;
-  background-color: #007aff;
-  color: white;
-  border-bottom-right-radius: 2px;
+  background: #2563eb; /* Синий акцент */
+  border-bottom-right-radius: 4px;
 }
 
+/* Сообщения поддержки (слева) */
 .other-message {
   align-self: flex-start;
-  background-color: #e5e5ea;
-  color: black;
-  border-bottom-left-radius: 2px;
+  background: #333; /* Темно-серый */
+  border-bottom-left-radius: 4px;
 }
 
+/* Область ввода */
 .input-area {
+  padding: 20px;
+  background: #222;
+  border-top: 1px solid #333;
   display: flex;
-  padding: 15px;
-  border-top: 1px solid #ddd;
-  background: white;
+  gap: 10px;
 }
 
 .input-area input {
   flex: 1;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 20px;
+  background: #121212;
+  border: 1px solid #444;
+  border-radius: 10px;
+  padding: 12px;
+  color: white;
   outline: none;
 }
 
+.input-area input:focus {
+  border-color: #2563eb;
+}
+
 .input-area button {
-  margin-left: 10px;
-  background: #007aff;
+  background: #2563eb;
   color: white;
   border: none;
-  padding: 0 15px;
-  border-radius: 20px;
+  padding: 0 20px;
+  border-radius: 10px;
+  font-weight: bold;
   cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.input-area button:hover {
+  opacity: 0.8;
 }
