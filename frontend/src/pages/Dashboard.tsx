@@ -1,11 +1,9 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from 'react-router-dom';
-// Импортируем стили и наш стор корзины
+import { useNavigate, Link } from 'react-router-dom'; // Добавили Link
 import { gridStyle, cardStyle, buyBtnStyle } from '../api/DashboardStyles.js';
 import { useCartStore } from '../store/useCartStore';
 import "../App.css";
 
-// Описываем тип товара, чтобы TS не ругался на .id или .name
 interface Product {
   id: number;
   name: string;
@@ -13,7 +11,6 @@ interface Product {
   description?: string;
   image?: string;
 }
-// ... твои импорты без изменений
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -24,23 +21,18 @@ export default function Dashboard() {
   useEffect(() => {
     const initDashboard = async () => {
       try {
-        // Проверяем авторизацию
         const authRes = await fetch("http://localhost:3000/api/auth/me", {
           credentials: "include"
         });
 
-        if (!authRes.ok) {
-          return navigate("/login");
-        }
+        if (!authRes.ok) return navigate("/login");
 
-        // Грузим продукты
         const prodRes = await fetch("http://localhost:3000/api/products", {
           credentials: "include" 
         });
         
         if (prodRes.ok) {
           const prodData = await prodRes.json();
-          // Если пришел массив — ставим его в стейт
           setProducts(Array.isArray(prodData) ? prodData : []);
         }
       } catch (err) {
@@ -61,22 +53,29 @@ export default function Dashboard() {
         {products.length > 0 ? (
           products.map((product) => (
             <div key={product.id} style={cardStyle}>
-              <div style={{ height: '200px', overflow: 'hidden', borderRadius: '8px', background: '#333' }}>
-                <img 
-                  src={product.image || 'https://placeholder.com'} 
-                  alt={product.name} 
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                />
-              </div>
-              <h3 style={{ margin: '15px 0 5px', color: 'white' }}>{product.name}</h3>
+              {/* Оборачиваем картинку и имя в Link для перехода на страницу товара */}
+              <Link to={`/product/${product.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                <div style={{ height: '200px', overflow: 'hidden', borderRadius: '8px', background: '#333', cursor: 'pointer' }}>
+                  <img 
+                    src={product.image || 'https://placeholder.com'} 
+                    alt={product.name} 
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                  />
+                </div>
+                <h3 style={{ margin: '15px 0 5px', color: 'white', cursor: 'pointer' }}>
+                  {product.name}
+                </h3>
+              </Link>
+              
               <p style={{ color: '#646cff', fontWeight: 'bold' }}>{product.price} ₽</p>
+              
               <button style={buyBtnStyle} onClick={() => addItem(product.id)}>
                 В корзину
               </button>
             </div>
           ))
         ) : (
-          <p style={{ color: 'white' }}>Товаров пока нет. Добавь их в Prisma Studio!</p>
+          <p style={{ color: 'white' }}>Товаров пока нет.</p>
         )}
       </div>
     </div>

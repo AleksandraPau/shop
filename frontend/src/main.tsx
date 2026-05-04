@@ -9,6 +9,7 @@ import Registration from './pages/Registration'
 import Dashboard from './pages/Dashboard'
 import { CartPage } from './pages/CartPage'
 import Support from './pages/Support'
+import { ProductPage } from './pages/ProductPage'
 // Импортируй страницу корзины, когда создашь: 
 // import CartPage from './pages/CartPage'
 
@@ -32,7 +33,7 @@ root.render(
           <Route path="support" element={<Support />}/>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/cart" element={<CartPage />} />
-          {/* Все роуты здесь автоматически получат Header и fetchCart */}
+          <Route path="/product/:id" element={<ProductPage />}/>
         </Route>
 
         {/* Редирект с главной на логин или дашборд */}
