@@ -18,54 +18,60 @@ const Support: React.FC = () => {
   const socketRef = useRef<Socket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => {
+  const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth"});
+  }
+  useEffect(() => {
+    scrollToBottom();
   }, [messages]);
 
   useEffect(() => {
     socketRef.current = io("http://localhost:3000", {
-      auth: {
-        userId: user?.id
-      }
+      withCredentials: true
     });
 
-    socketRef.current.emit("get_history");
+    const socket = socketRef.current;
 
-    socketRef.current.on("chat_history", (history: Message[]) => {
+    socket.on("connect", () => {
+      console.log("Connect to chat");
+      socket.emit("get_history");
+    });
+
+    socket.on("chat_history", (history: Message[]) => {
       setMessages(history);
     });
 
     socketRef.current.on("server_message", (newMsg: Message) => {
-      console.log("Message from server:", newMsg);
       setMessages((prev) => [...prev, newMsg]);
     });
 
+    socket.on("connect_error", (err) => {
+      console.error("Socket Auth Error:", err.message);
+    });
+
     return () => {
-      socketRef.current?.disconnect();
+      socket.disconnect();
     };
   }, [user]);
 
   const sendMessage = () => {
     if (!input.trim() || !socketRef.current) return;
 
-    const myMsg: Message = { 
-      id: Date.now(), 
+    socketRef.current.emit("client_message", { 
       text: input, 
-      isMe: true 
-    };
-    
-    socketRef.current.emit("client_message", {
-      text: input,
-      userId: user?.id
     });
-
+   
     setInput('');
   };
 
-  return (
+   return (
     <div className="chat-container">
       <div className="messages-list">
-        {messages.length === 0 && <p style={{color: '#888', textAlign: 'center'}}>История чата пуста</p>}
+        {messages.length === 0 && (
+          <p style={{ color: '#888', textAlign: 'center', marginTop: '20px' }}>
+            История чата пуста. Напишите что-нибудь!
+          </p>
+        )}
         {messages.map((msg) => (
           <div key={msg.id} className={`message ${msg.isMe ? 'my-message' : 'other-message'}`}>
             {msg.text}
@@ -80,7 +86,7 @@ const Support: React.FC = () => {
           onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
           placeholder="Напишите сообщение..." 
         />
-        <button onClick={sendMessage}>Отправить</button>
+        <button onClick={sendMessage} disabled={!input.trim()}>Отправить</button>
       </div>
     </div>
   );

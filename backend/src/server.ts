@@ -1,19 +1,18 @@
-import express, {type Request, type Response } from "express";
+import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import { Server } from "socket.io";
 import http from "http";
+import { Server } from "socket.io";
 
 import authRouter from "./api/auth";
 import cartRoutes from "./api/cart";
 import productsRouter from "./api/products";
-import { id } from "effect/Fiber";
-import {prisma} from "./db";
-import { disconnect } from "cluster";
+import { initSocket } from "./services/socket.service";
 
 const PORT = 3000;
 const app = express();
 
+// Middleware
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
@@ -21,72 +20,27 @@ app.use(cors({
     credentials: true,
 }));
 
+// API Routes
 app.use("/api/auth", authRouter);
 app.use("/api/products", productsRouter);
 app.use("/api/cart", cartRoutes);
 
 app.get("/", (req, res) => {
-    res.status(200).json({ status: "ok!!!!!!"});
+    res.status(200).json({ status: "ok" });
 });
 
+// HTTP & Socket Server
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: process.env.CLIENT_URL || 'http://localhost:5173',
+        origin: 'http://localhost:5173',
         credentials: true
     }
 });
 
-io.on("connection", (socket) => {
-    const userId = Number(socket.handshake.auth.userId);
-    if(!isNaN(userId)) {
-        socket.join(`user_${userId}`);
-        console.log(`User ${userId} joined room user_${userId}`);
-
-    }
-
-    socket.on("get_history", async () => {
-        try {
-            const history = await prisma.chatMessage.findMany({
-                where: { userId },
-                orderBy: { createdAt: 'asc' } 
-            });
-            socket.emit("chat_history", history);
-        } catch (e) {
-            console.error("History loading error:", e);
-        }
-    });
-
-
-    socket.on("client_message", async (data) => {
-        if (isNaN(userId)) return;
-
-        try {
-            const savedMsg = await prisma.chatMessage.create({
-                data: { text: data.text, isMe: true, userId }
-            });
-            socket.to(`user_${userId}`).emit( "server_message", savedMsg);
-
-            setTimeout(async () => {
-                const supportMsg = await prisma.chatMessage.create({
-                    data: {
-                        text: "Thank you! We'll be back soon with answer!",
-                        isMe: false,
-                        userId
-                    }
-                });
-                io.to(`user_${userId}`).emit("server_message", supportMsg);
-        }, 1000);
-        }  catch (e) {
-            console.error("Error to saving chat:", e);
-        }
-    });
-
-    socket.on("disconnect", () => {
-        console.log(`User ${userId} diconnected`);
-    });
-});
+// Инициализация вынесенной логики сокетов
+initSocket(io);
 
 server.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
