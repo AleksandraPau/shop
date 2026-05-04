@@ -8,22 +8,27 @@ const COOKIE_OPTIONS = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
   sameSite: 'lax' as const, 
-  maxAge: 24 *60 *60 * 1000
+  maxAge: 24 * 60 * 60 * 1000
 };
 
 router.get("/me", protect, async (req: any, res) => {
   try {
     const user = await AuthService.findUserById(req.user.userId);
+    
+    if (!user) {
+      return res.status(401).json({ error: "Пользователь не найден" });
+    }
+
     res.json(user);
   } catch (e) {
-    res.status(401).json({ error: "Not authorized" });
+    res.status(401).json({ error: "Сессия невалидна или истекла" });
   }
 });
 
 router.post("/login", async (req, res) => {
   try {
     const { identifier, password } = req.body;
-    const { token, username} = await AuthService.login(identifier, password);
+    const { token, username } = await AuthService.login(identifier, password);
 
     res.cookie("token", token, COOKIE_OPTIONS);
     res.status(200).json({ message: "success", username });

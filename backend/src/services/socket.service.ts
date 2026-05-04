@@ -9,8 +9,6 @@ export const initSocket = (io: Server) => {
     io.use(async (socket, next) => {
         try {
             const rawCookies = socket.handshake.headers.cookie;
-            console.log("Raw Cookies from handshake:", rawCookies); // ЛОГ ДЛЯ ПРОВЕРКИ
-
             if (!rawCookies) {
                 return next(new Error('Authentication error: No cookies found'));
             }
